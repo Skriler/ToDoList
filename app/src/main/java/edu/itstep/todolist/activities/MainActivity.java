@@ -1,5 +1,6 @@
 package edu.itstep.todolist.activities;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
@@ -17,6 +18,9 @@ import edu.itstep.todolist.entities.Task;
 import edu.itstep.todolist.services.TaskService;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+    public static final String TASK_LIST_TAG = "tasks";
+
+    ArrayList<Task> tasks;
     ListView lvTasks;
     TaskListAdapter adapterTask;
 
@@ -25,7 +29,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ArrayList<Task> tasks = TaskService.getTasks();
+        tasks = TaskService.getTasks();
         adapterTask = new TaskListAdapter(this, R.layout.custom_list_view_item, tasks);
         lvTasks = findViewById(R.id.lvTasks);
         lvTasks.setAdapter(adapterTask);
@@ -54,8 +58,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return;
 
         Task newTask = new Task(subject, content, new Date());
-
         adapterTask.add(newTask);
+
+        ((EditText)findViewById(R.id.etSubject)).setText("");
+        ((EditText)findViewById(R.id.etContent)).setText("");
     }
 
     private void deleteSelectedTasks() {
@@ -74,5 +80,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 adapterTask.remove(task);
             }
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putSerializable(TASK_LIST_TAG, tasks);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        tasks = (ArrayList<Task>) savedInstanceState.getSerializable(TASK_LIST_TAG);
+        adapterTask = new TaskListAdapter(this, R.layout.custom_list_view_item, tasks);
+        lvTasks = findViewById(R.id.lvTasks);
+        lvTasks.setAdapter(adapterTask);
     }
 }
